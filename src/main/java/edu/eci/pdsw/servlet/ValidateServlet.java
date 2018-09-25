@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import edu.eci.pdsw.model.Employee;
+import edu.eci.pdsw.model.SocialSecurityType;
 import edu.eci.pdsw.validator.EmployeeValidator;
 import edu.eci.pdsw.validator.ErrorType;
 import edu.eci.pdsw.validator.SalaryValidator;
@@ -42,10 +44,8 @@ public class ValidateServlet extends HttpServlet {
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		Writer responseWriter = resp.getWriter();
-
-		// TODO Add the corresponding Content Type, Status, and Response
-		resp.setContentType("");
-		resp.setStatus(0);
+		resp.setContentType("text/html");
+		resp.setStatus(200);
 		responseWriter.write(readFile("form.html"));
 		responseWriter.flush();
 	}
@@ -56,13 +56,22 @@ public class ValidateServlet extends HttpServlet {
 	@Override
 	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		Writer responseWriter = resp.getWriter();
-
-		// TODO Create and validate employee
-		Optional<ErrorType> response = validator.validate(null);
-
 		// TODO Add the Content Type, Status, and Response according to validation response
-		resp.setContentType("");
-		resp.setStatus(0);
+		
+		Employee employee = new Employee(Integer.parseInt((String) req.getParameter("personID")), 
+				Integer.parseInt((String)req.getParameter("salary")),
+				SocialSecurityType.valueOf(req.getParameter("SocialSecurity")) );
+		
+		// TODO Create and validate employee
+		Optional<ErrorType> response = validator.validate(employee);
+		
+		if(!response.isPresent()) {
+			resp.setStatus(400);
+		}else {
+			resp.setStatus(200);
+		}
+		
+		resp.setContentType("text/html");
 		responseWriter.write(String.format(readFile("result.html"), response.map(ErrorType::name).orElse("Success")));
 		responseWriter.flush();
 	}
